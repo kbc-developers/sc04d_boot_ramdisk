@@ -93,6 +93,9 @@ loglevel 3
 # This is needed by any process that uses socket tagging.
     chmod 0644 /dev/xt_qtaguid
 
+# bootanimation wait one loop
+    setprop sys.bootanim_wait 1
+
 on fs
 # mount mtd partitions
     # Mount /system rw first to give the filesystem a chance to save a checkpoint
@@ -460,10 +463,9 @@ service media /system/bin/mediaserver
     group audio camera inet net_bt net_bt_admin net_bw_acct drmrpc
     ioprio rt 4
 
-service bootanim /system/bin/bootanimation
-    class main
-    user graphics
-    group graphics
+service bootanim /sbin/bootanimation
+    user root
+    group root
     disabled
     oneshot
 
@@ -514,6 +516,13 @@ service dumpstate /system/bin/dumpstate -s
     disabled
     oneshot
 
+# extra init
+service initpost /sbin/initpost.sh
+    class main
+    user root
+    disabled
+    oneshot
+
 # adb over network
 on property:service.adb.tcp.port=5555
     stop adbd
@@ -521,4 +530,7 @@ on property:service.adb.tcp.port=5555
 on property:service.adb.tcp.port=-1
     stop adbd
     start adbd
+
+on property:sys.bootanim_completed=1
+    stop bootanim
 
